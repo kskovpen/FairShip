@@ -84,9 +84,9 @@ class ShipDigiReco:
   self.sigma_spatial = global_variables.modules["Strawtubes"].StrawSigmaSpatial()
 # optional if present, splitcalCluster
   if self.sTree.GetBranch("splitcalPoint"):
-   self.digiSplitcal = ROOT.TClonesArray("splitcalHit")
+   self.digiSplitcal = ROOT.std.vector("splitcalHit")()
    self.digiSplitcalBranch=self.sTree.Branch("Digi_SplitcalHits",self.digiSplitcal,32000,-1)
-   self.recoSplitcal = ROOT.TClonesArray("splitcalCluster")
+   self.recoSplitcal = ROOT.std.vector("splitcalCluster")()
    self.recoSplitcalBranch=self.sTree.Branch("Reco_SplitcalClusters",self.recoSplitcal,32000,-1)
 
 
@@ -245,28 +245,23 @@ class ShipDigiReco:
     self.digitize_MTC()
     self.digiMTCBranch.Fill()
    if self.sTree.GetBranch("splitcalPoint"):
-    self.digiSplitcal.Delete()
-    self.recoSplitcal.Delete()
+    self.digiSplitcal.clear()
+    self.recoSplitcal.clear()
     self.digitizeSplitcal()
     self.digiSplitcalBranch.Fill()
     self.recoSplitcalBranch.Fill()
 
  def digitizeSplitcal(self):
    listOfDetID = {} # the idea is to keep only one hit for each cell/strip and if more points fall in the same cell/strip just sum up the energy
-   index = 0
-   for aMCPoint in self.sTree.splitcalPoint:
-     aHit = ROOT.splitcalHit(aMCPoint,self.sTree.t0)
-     detID = aHit.GetDetectorID()
-     if detID not in listOfDetID:
-       if self.digiSplitcal.GetSize() == index:
-         self.digiSplitcal.Expand(index+1000)
-       listOfDetID[detID] = index
-       self.digiSplitcal[index]=aHit
-       index+=1
-     else:
-       indexOfExistingHit = listOfDetID[detID]
-       self.digiSplitcal[indexOfExistingHit].UpdateEnergy(aHit.GetEnergy())
-   self.digiSplitcal.Compress() #remove empty slots from array
+   for point in self.sTree.splitcalPoint:
+       hit = ROOT.splitcalHit(point, self.sTree.t0)
+       detector_id = hit.GetDetectorID()
+       if detector_id not in listOfDetID:
+           self.digiSplitcal.push_back(hit)
+           listOfDetID[detector_id] = len(self.digiSplitcal) - 1
+       else:
+           indexOfExistingHit = listOfDetID[detector_id]
+           self.digiSplitcal[indexOfExistingHit].UpdateEnergy(hit.GetEnergy())
 
    ##########################
    # cluster reconstruction #
@@ -414,19 +409,15 @@ class ShipDigiReco:
      # print '------ digitizeSplitcal - cluster n = ', i
      # print '------ digitizeSplitcal - cluster size = ', len(list_final_clusters[i])
 
-     for j,h in enumerate(list_final_clusters[i]):
-       if j==0: aCluster = ROOT.splitcalCluster(h)
-       else: aCluster.AddHit(h)
+     cluster = ROOT.splitcalCluster(list_final_clusters[i][0])
 
-     aCluster.SetIndex(int(i))
-     aCluster.ComputeEtaPhiE()
-     # aCluster.Print()
+     map(cluster.AddHit, list_final_clusters[i][1:])
 
-     if self.recoSplitcal.GetSize() == i:
-       self.recoSplitcal.Expand(i+1000)
-     self.recoSplitcal[i]=aCluster
+     cluster.SetIndex(int(i))
+     # cluster.ComputeEtaPhiE()  # FIXME: SegFault in l100 of splitcalCluster.cxx
 
-   self.recoSplitcal.Compress() #remove empty slots from array
+     self.recoSplitcal.push_back(cluster)
+
 
 
    # #################
