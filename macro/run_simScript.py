@@ -34,7 +34,7 @@ MCTracksWithHitsOrEnergyCut = False # or of above, factor 2 file size increase c
 charmonly    = False  # option to be set with -A to enable only charm decays, charm x-sec measurement
 HNL          = True
 
-inputFile    = "/eos/experiment/ship/data/Charm/Cascade-parp16-MSTP82-1-MSEL4-978Bpot.root"
+inputFile    = "root://eospublic.cern.ch//eos/experiment/ship/data/Charm/Cascade-parp16-MSTP82-1-MSEL4-978Bpot.root"
 defaultInputFile = True
 
 globalDesigns = {
@@ -181,7 +181,7 @@ if options.mudis:    simEngine = "muonDIS"
 if options.command == "PG":       simEngine = "PG"
 if options.A != 'c':
      inclusive = options.A
-     if options.A =='b': inputFile = "/eos/experiment/ship/data/Beauty/Cascade-run0-19-parp16-MSTP82-1-MSEL5-5338Bpot.root"
+     if options.A =='b': inputFile = "root://eospublic.cern.ch//eos/experiment/ship/data/Beauty/Cascade-run0-19-parp16-MSTP82-1-MSEL5-5338Bpot.root"
      if options.A.lower() == 'charmonly':
            charmonly = True
            HNL = False
