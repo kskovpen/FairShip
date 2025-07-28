@@ -30,7 +30,7 @@ fi
 if [ $# -eq 0 ]
   then
 
- alibuild/aliBuild -c shipdist/ --defaults fairship build FairShip
+ alibuild/aliBuild -c shipdist/ --defaults release build FairShip
 
 # not done by the framework
  if [ -f config.sh ];
