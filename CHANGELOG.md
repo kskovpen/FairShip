@@ -18,6 +18,8 @@ it in future.
 
 ### Changed
 
+* Scale `chicc`/`chibb` in `run_fixedTarget.py` by the heavy-flavour cross section per nucleon stored in the cascade input file, so that the normalisation follows the beam energy, tune and target composition the file was generated with. Files without it, such as the existing ones on EOS, keep the previous values.
+
 ### Fixed
 
 ### Removed
