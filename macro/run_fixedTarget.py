@@ -452,7 +452,7 @@ P8gen.SetHeartBeat(100000)
 if args.G4only:
     P8gen.SetG4only()
 if args.pythia8_tune != "default":
-    P8gen.SetPythiaTune(args.pythia8_tune)
+    P8gen.SetPythiaTune(args.pythia8_tune)  # type: ignore[missing-attribute]
 if args.JpsiMainly:
     P8gen.SetJpsiMainly()
 if args.tauOnly:
