@@ -20,6 +20,9 @@ it in future.
 
 ### Fixed
 
+* Read the normalisation histogram of charm and beauty input files as `TH1`, not `TH1F`, so that files written by `makeCascade.py` (`rootUtils` books a `TH1D`) are accepted instead of failing with "histogram '2' not found".
+* Post-process the simulation output of `run_fixedTarget.py`, not the first open ROOT file, which for charm and beauty is the cascade input file kept open by the generator, so that charm and beauty runs no longer end with `KeyError: 'cbmsim'`.
+
 ### Removed
 
 ## 26.09 - 2026-09-15
