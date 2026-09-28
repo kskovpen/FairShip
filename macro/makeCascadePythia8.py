@@ -9,6 +9,9 @@ chi/chi_max, chi = K * sigma(signal) / sigma(total), and a minimum-bias event wh
 threshold are added to the stack. Pythia8 changes the beam energy event by event only for soft QCD,
 so signal events are generated in batches in 10% momentum bins, in the centre-of-mass frame, and
 boosted to the lab along the projectile.
+
+Unlike makeCascade.py, elastic scattering does not increase the cascade depth, so depth 1 (the
+normalisation of run_fixedTarget.py) covers the beam proton up to its first inelastic interaction.
 """
 
 import argparse
@@ -78,8 +81,8 @@ else:
     idsig |= {5442, 5444, 5512, 5514, 5522, 5524, 5532, 5534, 5542, 5544, 5554}
     process = "HardQCD:hardbbbar = on"
     kfactor = (1.04, 1.19)
-if args.nev < 1 or args.nrpoints < 2 or args.pbeamh <= pbeaml:
-    ap.error(f"need --nev >= 1, --nrpoints >= 2 and a beam energy above {pbeaml} GeV")
+if args.nevgen < 1 or args.nev < 1 or args.nrpoints < 2 or args.pbeamh <= pbeaml:
+    ap.error(f"need --nevgen >= 1, --nev >= 1, --nrpoints >= 2 and a beam energy above {pbeaml} GeV")
 
 # FTFT tune: parameters differing from Monash 2013, as in FixedTargetGenerator.cxx
 tune = []
@@ -290,8 +293,17 @@ for iev in range(args.nevgen):
         mb.setKinematics(px, py, pz, 0.0, 0.0, 0.0)
         next_event(mb)
         code = mb.infoPython().code()
+        if code == 102:
+            # Elastic scattering does not start a new cascade generation: the scattered hadron keeps
+            # its depth. Depth 1 is then everything the beam proton produces up to and including its
+            # first inelastic interaction, which is what chicc/chibb in run_fixedTarget.py normalise.
+            final = [mb.event[i] for i in range(mb.event.size()) if mb.event[i].isFinal()]
+            lead = max(final, key=lambda part: part.pAbs())
+            if lead.pAbs() > pbeaml and len(stack) < 999:
+                stack.append((pid, lead.px(), lead.py(), lead.pz(), depth, ancestors, sub))
+            continue
         icas = min(depth + 1, 98)
-        if depth == 1:  # interaction process of the first proton
+        if depth == 1:  # first inelastic interaction process of the beam proton
             sub = [code] + sub[1:]
         for i in range(mb.event.size()):
             part = mb.event[i]
